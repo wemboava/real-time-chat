@@ -10,6 +10,7 @@
     "babel-eslint": "^8.2.6",
     "eslint-config-airbnb": "^17.0.0",
     "eslint-plugin-react-native": "^3.2.1",
+    "prop-type": "0.0.1",
     "react": "16.4.1",
     "react-native": "0.56.0"
   },
