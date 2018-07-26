@@ -21,7 +21,8 @@
         "react-native/no-unused-styles": "off",
         "react-native/split-platform-components": "off",
         "react-native/no-inline-styles": "off",
-        "react-native/no-color-literals": "off"
+        "react-native/no-color-literals": "off",
+        "react/prefer-stateless-function": [0, { "ignorePureComponents": 0 }]
     },
     "globals": {
         "__DEV__": true
