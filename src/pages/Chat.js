@@ -1,4 +1,7 @@
-import React from 'react';
+import React, { Component } from 'react';
+import { graphql } from 'react-apollo';
+import gql from 'graphql-tag';
+
 import {
   View,
   KeyboardAvoidingView,
@@ -8,6 +11,7 @@ import {
   StyleSheet,
   Dimensions,
   StatusBar,
+  ActivityIndicator,
 } from 'react-native';
 
 import Input from '../components/input';
@@ -57,43 +61,75 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
+  loading: {
+    marginTop: 20,
+  }
 });
 
-const Chat = () => (
-  <KeyboardAvoidingView
-    style={styles.container}
-    behavior={Platform.OS === 'ios' ? 'padding' : null}
-    // keyboardShouldPerssistTabs="never"
-  >
-    <ScrollView contentContainerStyle={styles.conversation}>
-      <View style={[styles.bubble, styles['bubble-left']]}>
-        <Text style={styles.author}>
-          Amor
-        </Text>
-        <Text style={styles.message}>
-          Oi mozi
-        </Text>
-      </View>
-      <View style={[styles.bubble, styles['bubble-right']]}>
-        <Text style={styles.author}>
-          Willian
-        </Text>
-        <Text style={styles.message}>
-          Oi amor
-        </Text>
-      </View>
-      <View style={[styles.bubble, styles['bubble-left']]}>
-        <Text style={styles.author}>
-          Amor
-        </Text>
-        <Text style={styles.message}>
-          Tudo bem?
-        </Text>
-      </View>
-    </ScrollView>
+const ConversationQuery = gql`
+  query {
+    allMessages(
+      orderBy: createdAt_ASC
+    ) {
+      id
+      from
+      message
+    }
+  }
+`;
 
-    <Input />
-  </KeyboardAvoidingView>
-);
+const author = 'Willian';
 
-export default Chat;
+class Chat extends Component {
+  componentDidUpdate() {
+    setTimeout(() => {
+      this._scrollView.scrollToEnd({ animated: false })
+    }, 0);
+  }
+  renderChat = () => (
+    this.props.conversation.allMessages.map(item => (
+      <View
+        key={item.id}
+        style={[
+          styles.bubble,
+          item.from === author
+            ? styles['bubble-right']
+            : styles['bubble-left'],
+        ]}
+      >
+        <Text style={styles.author}>
+          {item.from}
+        </Text>
+        <Text style={styles.message}>
+          {item.message}
+        </Text>
+      </View>
+    ))
+  );
+
+  render() {
+    return (
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === 'ios' ? 'padding' : null}
+        // keyboardShouldPerssistTabs="never"
+      >
+        <ScrollView
+          ref={scrollView => this._scrollView = scrollView}
+          contentContainerStyle={styles.conversation}
+        >
+          {
+            this.props.conversation.loading
+              ? <ActivityIndicator style={styles.loading} color="#FFF" />
+              : this.renderChat()
+          }
+        </ScrollView>
+        <Input />
+      </KeyboardAvoidingView>
+    );
+  }
+}
+
+export default graphql(ConversationQuery, {
+  name: 'conversation',
+})(Chat);
