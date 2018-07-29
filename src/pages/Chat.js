@@ -81,6 +81,35 @@ const ConversationQuery = gql`
 const author = 'Willian';
 
 class Chat extends Component {
+  componentDidMount() {
+    this.props.conversation.subscribeToMore({
+      document: gql`
+        subscription onMessageAdded($author: String!) {
+          Message(filter: {
+            mutation_in: [CREATED]
+            node: {
+              from_not: $author
+            }
+          }) {
+            node {
+              id
+              from
+              message
+            }
+          }
+        }
+      `,
+      variables: {
+        author,
+      },
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData['Message'].node) {
+          return prev;
+        }
+       return { ...prev, allMessages: [ ...prev.allMessages, newItem ] };
+      }
+    });
+  }
 
   componentDidUpdate() {
     setTimeout(() => {
