@@ -81,11 +81,24 @@ const ConversationQuery = gql`
 const author = 'Willian';
 
 class Chat extends Component {
+
   componentDidUpdate() {
     setTimeout(() => {
       this._scrollView.scrollToEnd({ animated: false })
     }, 0);
   }
+
+  handleAddMessage = (proxy, { data: { createMessage } }) => {
+    const data = proxy.readQuery({
+      query: ConversationQuery,
+    });
+    data.allMessages.push(createMessage);
+    proxy.writeQuery({
+      query: ConversationQuery,
+      data
+    });
+  }
+
   renderChat = () => (
     this.props.conversation.allMessages.map(item => (
       <View
@@ -124,7 +137,7 @@ class Chat extends Component {
               : this.renderChat()
           }
         </ScrollView>
-        <Input />
+        <Input author={author} onAddMessage={this.handleAddMessage} />
       </KeyboardAvoidingView>
     );
   }
