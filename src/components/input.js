@@ -60,7 +60,7 @@ class Input extends Component {
       <View style={styles.inputContainer}>
         <TextInput
           style={styles.input}
-          underlineColorAndroid="rgba(0, 0, 0,)"
+          underlineColorAndroid="rgba(0, 0, 0, 0)"
           value={this.state.message}
           onChangeText={message => this.setState({message})}
         />
