@@ -103,17 +103,18 @@ class Chat extends Component {
         author,
       },
       updateQuery: (prev, { subscriptionData }) => {
-        if (!subscriptionData['Message'].node) {
-          return prev;
-        }
-       return { ...prev, allMessages: [ ...prev.allMessages, newItem ] };
+        if (!subscriptionData['Message']) return prev;
+
+        const newItem = subscriptionData['Message'].node;
+
+        return { ...prev, allMessages: [ ...prev.allMessages, newItem ] };
       }
     });
   }
 
-  componentDidUpdate() {
+  componentDidUpdate(prevProps) {
     setTimeout(() => {
-      this._scrollView.scrollToEnd({ animated: false })
+      this._scrollView.scrollToEnd({ animated: false });
     }, 0);
   }
 
@@ -121,12 +122,16 @@ class Chat extends Component {
     const data = proxy.readQuery({
       query: ConversationQuery,
     });
+
     data.allMessages.push(createMessage);
+
     proxy.writeQuery({
       query: ConversationQuery,
       data
     });
-  }
+
+    this._scrollView.scrollToEnd({ animated: false });
+  };
 
   renderChat = () => (
     this.props.conversation.allMessages.map(item => (
@@ -154,11 +159,12 @@ class Chat extends Component {
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : null}
-        // keyboardShouldPerssistTabs="never"
       >
         <ScrollView
-          ref={scrollView => this._scrollView = scrollView}
           contentContainerStyle={styles.conversation}
+          keyboardDismissMode={Platform.OS === 'android' ? 'none' : 'interactive'}
+          keyboardShouldPersistTaps="never"
+          ref={scrollView => this._scrollView = scrollView}
         >
           {
             this.props.conversation.loading

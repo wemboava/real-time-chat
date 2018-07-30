@@ -1,10 +1,9 @@
-import { split } from 'apollo-link'
+import { split } from 'apollo-link';
 import { ApolloClient } from 'apollo-client';
-import { WebSocketLink } from 'apollo-link-ws'
 import { HttpLink } from 'apollo-link-http';
+import { WebSocketLink } from 'apollo-link-ws';
 import { InMemoryCache } from 'apollo-cache-inmemory';
-import { getMainDefinition } from 'apollo-utilities'
-
+import { getMainDefinition } from 'apollo-utilities';
 
 const httpLink = new HttpLink({
   uri: 'https://api.graph.cool/simple/v1/cjjxgqfod261h0144fy4hky9h',
@@ -21,11 +20,10 @@ const link = split(
     return kind === 'OperationDefinition' && operation === 'subscription';
   },
   wsLink,
-  httpLink,
+  httpLink
 );
 
 const client = new ApolloClient({
-  // link: httpLink,
   link,
   cache: new InMemoryCache(),
 });
