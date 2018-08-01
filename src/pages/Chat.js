@@ -16,14 +16,14 @@ import {
 
 import Input from '../components/input';
 
-StatusBar.setBarStyle('light-content');
+StatusBar.setBarStyle('dark-content');
 
 const { width } = Dimensions.get('window');
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#2C4241',
+    backgroundColor: '#13a3ab',
     ...Platform.select({
       ios: { paddingTop: 20 },
     }),
@@ -47,7 +47,7 @@ const styles = StyleSheet.create({
   },
   'bubble-right': {
     alignSelf: 'flex-end',
-    backgroundColor: '#D1EDC1',
+    backgroundColor: '#97e4e0',
   },
   'bubble-left': {
     alignSelf: 'flex-start',
@@ -81,11 +81,24 @@ const ConversationQuery = gql`
 const author = 'Willian';
 
 class Chat extends Component {
+
   componentDidUpdate() {
     setTimeout(() => {
       this._scrollView.scrollToEnd({ animated: false })
     }, 0);
   }
+
+  handleAddMessage = (proxy, { data: { createMessage } }) => {
+    const data = proxy.readQuery({
+      query: ConversationQuery,
+    });
+    data.allMessages.push(createMessage);
+    proxy.writeQuery({
+      query: ConversationQuery,
+      data
+    });
+  }
+
   renderChat = () => (
     this.props.conversation.allMessages.map(item => (
       <View
@@ -124,7 +137,7 @@ class Chat extends Component {
               : this.renderChat()
           }
         </ScrollView>
-        <Input />
+        <Input author={author} onAddMessage={this.handleAddMessage} />
       </KeyboardAvoidingView>
     );
   }
