@@ -81,10 +81,40 @@ const ConversationQuery = gql`
 const author = 'Willian';
 
 class Chat extends Component {
+  componentDidMount() {
+    this.props.conversation.subscribeToMore({
+      document: gql`
+        subscription onMessageAdded($author: String!) {
+          Message(filter: {
+            mutation_in: [CREATED]
+            node: {
+              from_not: $author
+            }
+          }) {
+            node {
+              id
+              from
+              message
+            }
+          }
+        }
+      `,
+      variables: {
+        author,
+      },
+      updateQuery: (prev, { subscriptionData }) => {
+        if (!subscriptionData['Message']) return prev;
 
-  componentDidUpdate() {
+        const newItem = subscriptionData['Message'].node;
+
+        return { ...prev, allMessages: [ ...prev.allMessages, newItem ] };
+      }
+    });
+  }
+
+  componentDidUpdate(prevProps) {
     setTimeout(() => {
-      this._scrollView.scrollToEnd({ animated: false })
+      this._scrollView.scrollToEnd({ animated: false });
     }, 0);
   }
 
@@ -92,12 +122,16 @@ class Chat extends Component {
     const data = proxy.readQuery({
       query: ConversationQuery,
     });
+
     data.allMessages.push(createMessage);
+
     proxy.writeQuery({
       query: ConversationQuery,
       data
     });
-  }
+
+    this._scrollView.scrollToEnd({ animated: false });
+  };
 
   renderChat = () => (
     this.props.conversation.allMessages.map(item => (
@@ -125,11 +159,12 @@ class Chat extends Component {
       <KeyboardAvoidingView
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : null}
-        // keyboardShouldPerssistTabs="never"
       >
         <ScrollView
-          ref={scrollView => this._scrollView = scrollView}
           contentContainerStyle={styles.conversation}
+          keyboardDismissMode={Platform.OS === 'android' ? 'none' : 'interactive'}
+          keyboardShouldPersistTaps="never"
+          ref={scrollView => this._scrollView = scrollView}
         >
           {
             this.props.conversation.loading
